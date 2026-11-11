@@ -25,6 +25,15 @@ export const env = {
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean),
+  mail: {
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    from: process.env.MAIL_FROM ?? "WAJHA <no-reply@wajha.sa>",
+    /** Where booking requests go. Falls back to the contact email saved in the dashboard settings. */
+    notify: process.env.BOOKING_NOTIFY_EMAIL,
+  },
   admin: {
     name: process.env.ADMIN_NAME ?? "WAJHA Admin",
     email: process.env.ADMIN_EMAIL,

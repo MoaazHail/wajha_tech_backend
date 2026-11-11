@@ -8,10 +8,8 @@ import mongoose from "mongoose";
 import { connectDb } from "../config/db.js";
 import { env } from "../config/env.js";
 import { Admin } from "../models/admin.model.js";
-import { Content } from "../models/content.model.js";
 import { Plan } from "../models/plan.model.js";
 import { Project } from "../models/project.model.js";
-import { Section } from "../models/section.model.js";
 import { Setting } from "../models/setting.model.js";
 import { User } from "../models/user.model.js";
 import { hashPassword } from "../utils/hash.js";
@@ -68,92 +66,6 @@ const PLANS = [
   },
 ].map((plan, order) => ({ ...plan, order, currency: "ريال" }));
 
-const SECTIONS = [
-  { key: "hero", name: "الرئيسية", type: "hero" },
-  { key: "proof", name: "شريط الثقة", type: "proof" },
-  { key: "why", name: "مميزات الخدمة", type: "features", title: "نساعد الشركات على النمو رقمياً" },
-  { key: "package", name: "الباقة", type: "package", title: "باقة الشركات والأعمال" },
-  { key: "services", name: "الخدمات المنفردة", type: "services", title: "أو اطلب خدمة منفصلة" },
-  { key: "process", name: "خطوات العمل", type: "process", title: "كيف نعمل؟", subtitle: "عملية واضحة وشفافة من البداية للنهاية" },
-  { key: "work", name: "نماذج أعمالنا", type: "portfolio", title: "نماذج من أعمالنا", subtitle: "نفخر بثقة عملائنا ونجاح مشاريعهم." },
-  { key: "cta", name: "دعوة للتواصل", type: "cta" },
-].map((section, order) => ({ ...section, order }));
-
-const avatars = ["/assets/images/avatar-1.png", "/assets/images/avatar-2.png", "/assets/images/avatar-3.png"];
-
-/** Items per section key. `package` and `services` mirror the plans above. */
-const CONTENTS = {
-  hero: [
-    {
-      badge: "موقع + ملف تعريفي لشركتك",
-      title: "عميلك يحكم عليك\nقبل أن يكلّمك.",
-      body: "واجهة رقمية وبروفايل بهوية واحدة، يجعلان قرار التعامل معك محسوماً من أول نظرة.",
-      cta: { label: "اطلب موقعك الآن", href: WHATSAPP },
-    },
-  ],
-  proof: [
-    {
-      title: "تم تنفيذ أكثر من 50 مَوقعًا\nوبروفايل شركة باحترافية عالية",
-      body: "حلول رقمية تزيد ثقة عميلك ومبيعاتك",
-    },
-    ...avatars.map((src, i) => ({ title: `avatar-${i + 1}`, image: { src, alt: "" } })),
-  ],
-  why: [
-    { icon: "layout", title: "تصميم احترافي", body: "يعكس هوية شركتك" },
-    { icon: "bolt", title: "سرعة وأداء عالي", body: "مواقع سريعة ومتجاوبة" },
-    { icon: "chart", title: "جاهز لمحركات البحث SEO", body: "لظهور أفضل في النتائج" },
-    { icon: "headset", title: "دعم فني مستمر", body: "نرافقك بعد الإطلاق" },
-  ],
-  package: [
-    {
-      badge: "عرض خاص",
-      title: "موقع احترافي + بروفايل شركة متكامل",
-      body: "كل ما تحتاجه شركتك لتظهر بصورة احترافية أمام عملائك في مكان واحد. نصمم لك موقعاً يعكس قوة علامتك التجارية، وبروفايل شركة منظّماً يعرّف بخدماتك وأعمالك ويعزّز ثقة العملاء بك.",
-      items: PLANS[0].benefits,
-      price: 1200,
-      priceBefore: 2000,
-      currency: "ريال",
-      cta: { label: "اطلب الباقة الآن", href: WHATSAPP },
-      image: PLANS[0].image,
-    },
-  ],
-  services: [
-    {
-      icon: "monitor",
-      title: "إنشاء موقع إلكتروني",
-      body: "موقع احترافي متجاوب يعكس هوية شركتك ويجهّزك للظهور في محركات البحث.",
-      items: PLANS[1].benefits,
-      price: 1500,
-      currency: "ريال",
-      cta: { label: "اطلب خدمة الموقع", href: WHATSAPP },
-      image: PLANS[1].image,
-    },
-    {
-      icon: "file",
-      title: "إنشاء بروفايل شركة",
-      body: "ملف تعريفي منظّم يعرّف بخدماتك وأعمالك، جاهز للعرض والطباعة.",
-      items: PLANS[2].benefits,
-      price: 500,
-      currency: "ريال",
-      cta: { label: "اطلب خدمة البروفايل", href: WHATSAPP },
-      image: PLANS[2].image,
-    },
-  ],
-  process: [
-    { num: "01", icon: "brief", title: "نستمع لاحتياجاتك", body: "نفهم أهدافك ومتطلبات مشروعك بالتفصيل." },
-    { num: "02", icon: "design", title: "نخطط ونصمم", body: "نضع خطة ونصمم واجهات عصرية وتجربة مميزة." },
-    { num: "03", icon: "test", title: "نطوّر ونختبر", body: "نقوم بالتطوير والاختبار لضمان أعلى جودة." },
-    { num: "04", icon: "award", title: "نسلّم وندعم", body: "نسلّم المشروع مع دعم فني لضمان نجاحك." },
-  ],
-  cta: [
-    {
-      title: "جاهز للانطلاق بواجهة رقمية تميّزك؟",
-      body: "دعنا نساعدك في بناء حضور قوي على الإنترنت.",
-      cta: { label: "تواصل معنا الآن", href: WHATSAPP },
-    },
-  ],
-};
-
 // planIndex: 0 package, 1 website, 2 profile
 const CLIENTS = [
   { name: "عيادة الأمل", planIndex: 0 },
@@ -177,8 +89,6 @@ async function seed() {
   await connectDb();
 
   await Promise.all([
-    Section.deleteMany(),
-    Content.deleteMany(),
     Plan.deleteMany(),
     Project.deleteMany(),
     User.deleteMany(),
@@ -188,14 +98,6 @@ async function seed() {
   await Setting.create(SETTINGS);
 
   const plans = await Plan.insertMany(PLANS);
-  const sections = await Section.insertMany(SECTIONS);
-
-  const sectionByKey = new Map(sections.map((s) => [s.key, s._id]));
-  const contentDocs = Object.entries(CONTENTS).flatMap(([key, items]) =>
-    items.map((item, order) => ({ ...item, order, section: sectionByKey.get(key) })),
-  );
-  await Content.insertMany(contentDocs);
-
   const users = await User.insertMany(
     CLIENTS.map((client, i) => ({
       name: client.name,
@@ -232,7 +134,7 @@ async function seed() {
   }
 
   console.log(
-    `Seeded ${sections.length} sections, ${contentDocs.length} contents, ${plans.length} plans, ${users.length} clients, ${PROJECTS.length} projects.`,
+    `Seeded ${plans.length} plans, ${users.length} clients, ${PROJECTS.length} projects.`,
   );
 }
 
