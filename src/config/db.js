@@ -23,9 +23,18 @@ function ensureDnsServers() {
   if (onlyLoopback) dns.setServers(["1.1.1.1", "8.8.8.8"]);
 }
 
-export async function connectDb() {
-  ensureDnsServers();
-  mongoose.set("strictQuery", true);
-  await mongoose.connect(env.mongoUri);
-  console.log(`MongoDB connected: ${mongoose.connection.name}`);
+let connecting;
+
+/** Safe to call on every request: serverless functions reuse one connection while warm. */
+export function connectDb() {
+  connecting ??= (async () => {
+    ensureDnsServers();
+    mongoose.set("strictQuery", true);
+    await mongoose.connect(env.mongoUri);
+    console.log(`MongoDB connected: ${mongoose.connection.name}`);
+  })().catch((error) => {
+    connecting = undefined;
+    throw error;
+  });
+  return connecting;
 }

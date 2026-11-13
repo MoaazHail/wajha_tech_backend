@@ -3,3 +3,4 @@ node_modules
 # uploaded files
 images/*
 !images/.gitkeep
+.vercel

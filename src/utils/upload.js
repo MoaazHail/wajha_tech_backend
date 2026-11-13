@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,7 +8,10 @@ import multer from "multer";
 import { ApiError } from "./api-error.js";
 
 /** Uploaded images live here (backend/images) and are served at /images/<name>. */
-export const IMAGES_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../images");
+// On Vercel the project folder is read-only; /tmp is writable but NOT persistent (see README note).
+export const IMAGES_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "images")
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../images");
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
