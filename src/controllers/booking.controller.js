@@ -21,7 +21,7 @@ const wrap = (body) => `<div dir="rtl" style="font-family:Tahoma,Arial,sans-seri
 export const createBooking = asyncHandler(async (req, res) => {
   if (!mailConfigured && env.nodeEnv === "production") throw new ApiError(503, "خدمة البريد غير مفعّلة حالياً");
 
-  const { email, date } = req.body;
+  const { email, phone, date } = req.body;
   const settings = await Setting.findOne({ singleton: "site" });
   const owner = env.mail.notify || settings?.email;
   if (!owner) throw new ApiError(503, "لم يتم تحديد بريد استقبال الحجوزات");
@@ -29,7 +29,7 @@ export const createBooking = asyncHandler(async (req, res) => {
   const day = new Date(`${date}T00:00:00Z`);
   await assertDayFree(day);
 
-  const booking = await Booking.create({ email, date: day });
+  const booking = await Booking.create({ email, phone, date: day });
   const dayText = formatDay(date);
   const brand = settings?.name || "واجهة";
 
@@ -45,9 +45,9 @@ export const createBooking = asyncHandler(async (req, res) => {
     sendMail({
       to: owner,
       subject: `طلب موعد جديد: ${dayText}`,
-      text: `طلب موعد جديد\nاليوم: ${dayText}\nالبريد: ${email}`,
+      text: `طلب موعد جديد\nاليوم: ${dayText}\nالبريد: ${email}\nالجوال: ${phone}`,
       html: wrap(
-        `<h2>طلب موعد جديد</h2><p>اليوم: <strong>${escapeHtml(dayText)}</strong></p><p>البريد: <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>`,
+        `<h2>طلب موعد جديد</h2><p>اليوم: <strong>${escapeHtml(dayText)}</strong></p><p>البريد: <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p><p>الجوال: <a href="tel:${escapeHtml(phone.replace(/[^\d+]/g, ""))}" dir="ltr">${escapeHtml(phone)}</a></p>`,
       ),
     }),
   ]);
@@ -59,7 +59,7 @@ export const createBooking = asyncHandler(async (req, res) => {
     throw new ApiError(502, "تعذّر إرسال رسالة التأكيد، حاول مرة أخرى");
   }
 
-  res.status(201).json({ success: true, data: { id: booking.id, date, email } });
+  res.status(201).json({ success: true, data: { id: booking.id, date, email, phone } });
 });
 
 /** Public. The upcoming days that are already booked, so the form can grey them out. */

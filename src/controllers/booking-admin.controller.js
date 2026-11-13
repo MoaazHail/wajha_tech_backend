@@ -6,7 +6,7 @@ import { crud } from "./crud.factory.js";
 const base = crud(Booking, {
   sort: "-date",
   filters: ["status"],
-  search: ["email", "note"],
+  search: ["email", "phone", "note"],
 });
 
 /**
