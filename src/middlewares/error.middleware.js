@@ -21,7 +21,7 @@ export const errorHandler = (err, _req, res, _next) => {
     message = `Duplicate value for: ${Object.keys(err.keyValue ?? {}).join(", ")}`;
   } else if (err.name === "MulterError") {
     status = 400;
-    message = err.code === "LIMIT_FILE_SIZE" ? "Image is too large (max 5 MB)" : err.message;
+    message = err.code === "LIMIT_FILE_SIZE" ? "Image is too large (max 4 MB)" : err.message;
   } else if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
     status = 401;
     message = err.name === "TokenExpiredError" ? "Token expired" : "Invalid token";
