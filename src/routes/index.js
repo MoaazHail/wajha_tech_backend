@@ -11,7 +11,10 @@ import { image } from "../controllers/upload.controller.js";
 import { getSettings, updateSettings } from "../controllers/setting.controller.js";
 import { stats } from "../controllers/stats.controller.js";
 import { users } from "../controllers/user.controller.js";
+import { connectDb, dbHint, dbState, lastDbError } from "../config/db.js";
+import { missingEnv } from "../config/env.js";
 import { protect } from "../middlewares/auth.middleware.js";
+import { requireDb } from "../middlewares/db.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { uploadImage } from "../utils/upload.js";
 import { loginSchema } from "../validators/auth.validator.js";
@@ -44,7 +47,31 @@ const bookingLimiter = rateLimit({
   message: { success: false, message: "Too many booking requests, try again later" },
 });
 
-router.get("/health", (_req, res) => res.json({ success: true, status: "ok" }));
+/**
+ * Liveness plus a diagnosis: whether the database is reachable and which required variables
+ * are missing (names only). Never includes secrets or the connection string.
+ */
+router.get("/health", async (_req, res) => {
+  await connectDb().catch(() => {});
+  const db = dbState();
+  const ok = db === "connected" && missingEnv.length === 0;
+
+  res.status(ok ? 200 : 503).json({
+    success: ok,
+    status: ok ? "ok" : "degraded",
+    db,
+    ...(lastDbError && db !== "connected"
+      ? {
+          dbError: [lastDbError.name, lastDbError.codeName ?? lastDbError.code].filter(Boolean).join(": "),
+          hint: dbHint(lastDbError),
+        }
+      : {}),
+    ...(missingEnv.length ? { missingEnv } : {}),
+  });
+});
+
+// Everything below needs the database.
+router.use(requireDb);
 
 // Public
 router.get("/public/landing", landing);

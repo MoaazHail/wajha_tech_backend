@@ -1,18 +1,16 @@
 const required = ["MONGODB_URI", "JWT_SECRET"];
 
-for (const key of required) {
-  if (!process.env[key]) {
-    console.error(`Missing environment variable: ${key}`);
-    process.exit(1);
-  }
-}
+/**
+ * Names of required variables that are missing or still hold a placeholder. Locally the
+ * process stops right away; on Vercel it keeps running so /api/v1/health can say what is
+ * wrong instead of every request failing with a bare FUNCTION_INVOCATION_FAILED.
+ */
+export const missingEnv = required.filter((key) => !process.env[key]);
+if (/[<>]/.test(process.env.MONGODB_URI ?? "")) missingEnv.push("MONGODB_URI (still a <placeholder>)");
 
-if (/[<>]/.test(process.env.MONGODB_URI)) {
-  console.error(
-    "MONGODB_URI still contains a placeholder like <user>, <password> or <cluster>.\n" +
-      "Copy the real connection string from MongoDB Atlas (Connect > Drivers) into backend/.env.",
-  );
-  process.exit(1);
+if (missingEnv.length) {
+  console.error(`Missing or invalid environment variables: ${missingEnv.join(", ")}`);
+  if (!process.env.VERCEL) process.exit(1);
 }
 
 export const env = {
