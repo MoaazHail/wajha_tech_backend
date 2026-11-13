@@ -10,6 +10,7 @@ const bookingSchema = new mongoose.Schema(
     email: { type: String, required: true, lowercase: true, trim: true },
     /** Stored as the picked calendar day at 00:00 UTC. */
     date: { type: Date, required: true },
+    phone: { type: String, trim: true, default: "" },
     status: { type: String, enum: BOOKING_STATUSES, default: "pending" },
     /** Private note for the agency (never shown to the visitor). */
     note: { type: String, trim: true, default: "" },
